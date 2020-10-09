@@ -1,0 +1,16 @@
+
+{
+    "type": "poisson_arrival_uniform_load",
+    "static": false,
+    "num_timeslots": [6000, 6000],
+    "num_requests": [20, 200],
+    "service_rate": [100, 1000],
+    "num_vnfs": 6, 
+    "sfc_length": [1, 6], 
+    "bandwidth": [20, 100],
+    "max_response_latency": [1000, 1000],
+    "cpus": [1, 20],
+    "memory": [5.0, 10.0], 
+    "vnf_delays": [0, 0] 
+} 
+

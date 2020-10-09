@@ -1,0 +1,53 @@
+[
+    {
+        "arrival_time": 1,
+        "ttl": 10,
+        "arrival_rate": 1,
+        "bandwidth_demand": 1.0,
+        "max_response_latency": 5.0,
+        "vnfs": [
+            {
+                "cpu_demand": 5,
+                "memory_demand": 20.0
+            },
+            {
+                "cpu_demand": 3,
+                "memory_demand": 10.0
+            },
+            {
+                "cpu_demand": 15,
+                "memory_demand": 10.0
+            }
+        ]
+    },
+    {
+        "arrival_time": 3,
+        "ttl": 5,
+        "arrival_rate": 1,
+        "bandwidth_demand": 1.0,
+        "max_response_latency": 10.0,
+        "vnfs": [
+            {
+                "cpu_demand": 15,
+                "memory_demand": 10.0
+            }
+        ]
+    },
+    {
+        "arrival_time": 3,
+        "ttl": 5,
+        "arrival_rate": 1,
+        "bandwidth_demand": 1.0,
+        "max_response_latency": 10.0,
+        "vnfs": [
+            {
+                "cpu_demand": 10,
+                "memory_demand": 20.0
+            },
+            {
+                "cpu_demand": 15,
+                "memory_demand": 10.0
+            }
+        ]
+    }
+]

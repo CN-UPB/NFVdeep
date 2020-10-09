@@ -1,0 +1,34 @@
+[
+    {
+        "name": "learning_rate",
+        "type": "range",
+        "bounds": [
+            3e-05,
+            0.003
+        ]
+    },
+    {
+        "name": "gamma",
+        "type": "range",
+        "bounds": [
+            0.99,
+            1.0
+        ]
+    },
+    {
+        "name": "gae_lambda",
+        "type": "range",
+        "bounds": [
+            0.8,
+            1.0
+        ]
+    },
+    {
+        "name": "max_grad_norm",
+        "type": "range",
+        "bounds": [
+            0.3,
+            7.0
+        ]
+    }
+]
