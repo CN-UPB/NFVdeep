@@ -1,3 +1,5 @@
+![GitHub CI](https://github.com/CN-UPB/NFVdeep/workflows/Python%20application/badge.svg)
+
 # NFVdeep
 Deep Reinforcement Learning for Online Orchestration of Service Function Chains
 
