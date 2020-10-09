@@ -2,6 +2,7 @@
 Deep Reinforcement Learning for Online Orchestration of Service Function Chains
 
 *Disclaimer:* This is an unofficial implementation, trying to reproduce the deep reinforcement learning approach described in the [NFVdeep paper by  Xiao et al.](https://dl.acm.org/doi/abs/10.1145/3326285.3329056) as part of a graduate student project.
+While the implemented agent did learn over time, we were not able to reproduce the same results stated in the paper.
 
 **Advisor**: [Stefan Schneider](https://github.com/stefanbschneider)
 
