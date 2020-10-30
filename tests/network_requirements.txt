@@ -59,7 +59,7 @@ libxml2=2.9.10=he19cac6_1
 markupsafe=1.1.1=py38h7b6447c_0
 matplotlib=3.2.2=0
 matplotlib-base=3.2.2=py38hef1b27d_0
-mccabe=0.6.1=py38_1
+mccabe>=0.6.1
 mistune=0.8.4=py38h7b6447c_1000
 mkl=2020.1=217
 mkl-service=2.3.0=py38he904b0f_0
