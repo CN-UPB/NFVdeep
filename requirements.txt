@@ -19,7 +19,7 @@ click==7.1.2
 cloudpickle==1.6.0
 colorama==0.4.3
 colorful==0.5.4
-cryptography>=3.2
+cryptography @ file:///tmp/build/80754af9/cryptography_1598371395109/work
 cycler==0.10.0
 decorator==4.4.2
 dill==0.3.2

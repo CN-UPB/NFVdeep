@@ -11,7 +11,7 @@ certifi=2020.6.20=py38_0
 cffi=1.14.0=py38he30daa8_1
 chardet=3.0.4=py38_1003
 cloudpickle
-cryptography>=3.2
+cryptography=2.9.2=py38h1ba5d50_0
 cycler=0.10.0=py38_0
 dbus=1.13.16=hb2f20db_0
 decorator=4.4.2=py_0
@@ -59,7 +59,7 @@ libxml2=2.9.10=he19cac6_1
 markupsafe=1.1.1=py38h7b6447c_0
 matplotlib=3.2.2=0
 matplotlib-base=3.2.2=py38hef1b27d_0
-mccabe>=0.6.1
+mccabe=0.6.1=py38_1
 mistune=0.8.4=py38h7b6447c_1000
 mkl=2020.1=217
 mkl-service=2.3.0=py38he904b0f_0
