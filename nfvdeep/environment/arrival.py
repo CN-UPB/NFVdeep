@@ -5,7 +5,7 @@ import random
 import numpy as np
 from abc import abstractmethod
 from collections.abc import Generator
-from environment.sfv import ServiceFunctionChain
+from nfvdeep.environment.sfc import ServiceFunctionChain
 
 
 class ArrivalProcess(Generator):

@@ -8,6 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 from pathlib import Path
+from tabulate import tabulate
 from stable_baselines3.common.evaluation import evaluate_policy
 
 
@@ -36,6 +37,8 @@ def evaluate_final_policy(n_eval_episodes, agent, env):
         episode['mean_operating_servers'] = env.operating_servers / \
             env.episode_length
 
+        episode['placements'] = env.placements
+
         episode_results[episode_num] = episode
 
     return episode_results
@@ -51,6 +54,21 @@ def safe_experiment(results, args):
     with open(Path(args['output']) / 'args.json', 'a') as file:
         file.write(json.dumps(args))
         file.write("\n")
+
+    # write determined embeddings to file
+    table = []
+    for ep, episode in results.items():
+        for trial, logs in episode.items(): 
+            decisions = logs.pop('placements') 
+        
+            for sfc, embedding in decisions.items():
+                row = [ep, trial, sfc.arrival_time, sfc.ttl, sfc.bandwidth_demand, sfc.max_response_latency, sfc.vnfs, embedding]
+                table.append(row)
+
+    headers = ['Episode', 'Trial', 'Arrival', 'TTL', 'Bandwidth', 'Max Latency', 'VNFs', 'Placements']
+    table = tabulate(table, headers=headers)
+    with open(Path(args['output']) / 'placements.txt', 'w') as file:
+        file.write(table)
 
     # safe agent's performances in csv format
     data = {(args['agent'], i, j): results[i][j] for i in results.keys()

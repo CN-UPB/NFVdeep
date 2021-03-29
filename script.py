@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     # arguments to specify the final policy's evaluation
     parser.add_argument('--eval_episodes', type=int,
-                        default=20, help='Number of evaluation steps for one trained agent')
+                        default=10, help='Number of evaluation steps for one trained agent')
     parser.add_argument('--trials', type=int, default=10,
                         help='Number of trials evaluating the agent')
     parser.add_argument('--output', type=str, required=True,
@@ -104,10 +104,10 @@ if __name__ == '__main__':
         tb_log_name = agent.__class__.__name__ if isinstance(
             policy, str) else policy.__name__
 
-        #if policy == 'MlpPolicy':
+        if policy == 'MlpPolicy':
             # solely MLP policies require traning
-        agent.learn(total_timesteps=args.total_train_timesteps,
-                    tb_log_name=tb_log_name, callback=callback)
+            agent.learn(total_timesteps=args.total_train_timesteps,
+                        tb_log_name=tb_log_name, callback=callback)
 
         # evaluate final policy and log performances
         results[trial] = evaluate_final_policy(args.eval_episodes, agent, env)

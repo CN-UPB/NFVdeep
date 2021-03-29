@@ -3,7 +3,7 @@ import operator
 import networkx as nx
 from collections import Counter
 from networkx.exception import NetworkXNoPath
-from environment.sfv import ServiceFunctionChain
+from nfvdeep.environment.sfc import ServiceFunctionChain
 
 
 class Network:

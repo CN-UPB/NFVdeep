@@ -4,11 +4,11 @@ import json
 import numpy as np
 from gym import spaces
 from pathlib import Path
-from copy import deepcopy
-from environment.network import Network
-from environment.arrival import ArrivalProcess
 from tabulate import tabulate
-from environment.sfv import ServiceFunctionChain
+from copy import deepcopy
+from nfvdeep.environment.network import Network
+from nfvdeep.environment.arrival import ArrivalProcess
+from nfvdeep.environment.sfc import ServiceFunctionChain
 
 
 class Env(gym.Env):
@@ -83,8 +83,11 @@ class Env(gym.Env):
         if is_valid_sfc and is_last_of_sfc:
             self.network = deepcopy(self.vnf_backtrack)
             self.sfc_idx, self.vnf_idx = (self.sfc_idx + 1, 0)
+
             # update info regarding successful embedding
             info['accepted'] = True
+            info['placements'] = self.vnf_backtrack.sfc_embedding[sfc] 
+            info['sfc'] = sfc
 
             logging.debug(
                 'Updating network state to `vnf_backtrack` after completing SFC: {}'.format(self.sfc_idx))
@@ -99,6 +102,8 @@ class Env(gym.Env):
 
             # update info regarding unsuccessful embedding
             info['rejected'] = True
+            info['placements'] = None 
+            info['sfc'] = sfc
 
             self.sfc_idx, self.vnf_idx = (self.sfc_idx + 1, 0)
 
