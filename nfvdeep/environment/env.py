@@ -6,9 +6,9 @@ from gym import spaces
 from pathlib import Path
 from tabulate import tabulate
 from copy import deepcopy
-from nfvdeep.environment.network import Network
-from nfvdeep.environment.arrival import ArrivalProcess
-from nfvdeep.environment.sfc import ServiceFunctionChain
+from environment.network import Network
+from environment.arrival import ArrivalProcess
+from environment.sfc import ServiceFunctionChain
 
 
 class Env(gym.Env):
