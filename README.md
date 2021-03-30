@@ -35,8 +35,20 @@ python tune.py
  --logs <abs log path>
 ```
 
-# Results
+## Retrieving Placement Decisions
+The placement decisions for VNFs of arriving service requests are automatically tabulated in the `placements.txt` file (shown below) under the `--output` path, whereas recorded monitoring metrics such as the obtained reward or acceptance rate are logged to `results.csv`. For each episode, trial and arriving service function request, we tabulate its arrival time, time-to-live, bandwidth demands, maximum end-to-end latency, requested VNFs (CPUs & memory) as well as a list of taken placement decisions (node indices). If the list of placements is empty, the request was not embedded to the substrate network and NFVdeep used its in-build backtracking mechanism to release bound resources.
+
+````
+ Episode    Trial    Arrival    TTL    Bandwidth    Max Latency    VNFs (CPUs & memory)     Placements
+---------  -------  ---------  -----  -----------  -------------  -----------------------  ------------
+        0        0       4495     73      71.2339          10000  [(7, 7.52), (10, 5.69)]  [0, 2]
+
+````
+
+
+# Experimental Study
 Our evaluation is primarily based on generating arrival times with respect to a Poisson process (exponential arrival and service times) and is only loosely based on the evaluation proposed in the original NFVdeep paper. The load of individual SFCs and VNFs is uniformly sampled within their bounds specified in the respective `requests.json` files. All results simulate the SFC embedding problem on the real-world Abline network topology.
+
 ## Sampled Input Traffic
 First, we train and evaluate under randomly sampled input traffic traces and compare among PPO also its tuned variant against two heuristic baselines, i.e. against the random placement policy and a greedy first fit ('FirstFit') heuristic. 
 <p align="center">
