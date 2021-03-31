@@ -55,6 +55,8 @@ class NFVDeepMonitor(Monitor):
 
         self.operating_servers = 0
 
+        self.placements = {}
+
         return super().reset(**kwargs)
 
     def step(self, action):
@@ -65,6 +67,10 @@ class NFVDeepMonitor(Monitor):
         # add sfc related information to the monitor
         self.num_accepted += info['accepted']
         self.num_rejected += info['rejected']
+
+        if info['accepted'] or info['rejected']:
+            sfc = info['sfc']
+            self.placements[sfc] = info['placements']
 
         # add resource cost related information to the monitor
         for key in self.resource_costs:

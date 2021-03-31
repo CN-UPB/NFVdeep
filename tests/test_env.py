@@ -1,5 +1,5 @@
 from environment.network import Network
-from environment.sfv import ServiceFunctionChain
+from environment.sfc import ServiceFunctionChain
 from environment.env import Env
 from environment.arrival import ArrivalProcess
 import networkx as nx
