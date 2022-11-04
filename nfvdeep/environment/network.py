@@ -7,7 +7,7 @@ from environment.sfc import ServiceFunctionChain
 
 
 class Network:
-    def __init__(self, overlay, costs={'cpu': 0.2, 'memory': 0.2, 'bandwidth': 0.006}):
+    def __init__(self, overlay, costs={'cpu': 0.2, 'memory': 0.2, 'bandwidth': 0.0006}):
         """Internal representation of the network & embedded VNFs.
 
         Args:
