@@ -1,14 +1,11 @@
 import logging
 import gym
-import json
 import numpy as np
 from gym import spaces
-from pathlib import Path
 from tabulate import tabulate
 from copy import deepcopy
 from environment.network import Network
 from environment.arrival import ArrivalProcess
-from environment.sfc import ServiceFunctionChain
 
 
 class Env(gym.Env):
@@ -243,7 +240,7 @@ class Env(gym.Env):
         """Compute the environment's state representation."""
 
         if (done == True):
-            return np.asarray([])
+            return np.zeros(self.observation_space.shape)
 
         # compute remaining resources of backtrack network, i.e. (cpu, memory, bandwidth) for each node
         network_resources = self.vnf_backtrack.calculate_resources(

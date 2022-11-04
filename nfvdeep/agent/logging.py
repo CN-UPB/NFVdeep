@@ -1,3 +1,7 @@
+from typing import List, Optional, Tuple
+import gym
+
+import numpy as np
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import BaseCallback
 
@@ -10,41 +14,68 @@ class MetricLoggingCallback(BaseCallback):
 
     def _on_step(self):
         """Logs step information of custom NFVDeep environment to TensorBoard"""
+
+        if not np.any(self.locals["dones"]):
+            return True
+
         # get monitor object and log network metrics to TensorBoard
-        monitor: NFVDeepMonitor = self.training_env.envs[0]
-        num_requests = max(monitor.num_accepted + monitor.num_rejected, 1)
-        self.logger.record('acceptance_ratio',
-                           monitor.num_accepted / num_requests)
-        self.logger.record('rejection_ratio',
-                           monitor.num_rejected / num_requests)
+        monitors: List[NFVDeepMonitor] = [env for env, done in zip(self.training_env.envs, self.locals["dones"]) if done]
+
+        num_requests = [max(monitor.num_accepted + monitor.num_rejected, 1) for monitor in monitors]
+        acceptance = [monitor.num_accepted / nrequests for monitor, nrequests in zip(monitors, num_requests)]
+        rejection = [monitor.num_rejected / nrequests for monitor, nrequests in zip(monitors, num_requests)]
+
+        self.logger.record('acceptance_ratio', np.mean(acceptance))
+        self.logger.record('rejection_ratio', np.mean(rejection))
+        
+        costs = [{key: monitor.resource_costs[key] / monitor.episode_length for key in monitor.resource_costs} for monitor in monitors]
+        costs = {key: np.mean([dic[key] for dic in costs]) for key in costs[0]}
 
         # log mean episode costs per unique resource type
-        for key in monitor.resource_costs:
-            self.logger.record('mean_{}'.format(
-                key), monitor.resource_costs[key] / monitor.episode_length)
+        for key, value in costs.items():
+            self.logger.record('mean_{}'.format(key), value)
 
         # log total mean costs for the respective episode
-        self.logger.record('mean_total_costs', sum(
-            monitor.resource_costs.values()) / monitor.episode_length)
+        total = np.mean([sum(monitor.resource_costs.values()) / monitor.episode_length for monitor in monitors])
+        self.logger.record('mean_total_costs', total) 
 
         # log the mean amount of occupied resources per resource type
-        for key in monitor.resource_utilization:
-            self.logger.record('mean_{}'.format(
-                key), monitor.resource_utilization[key])
+        occupied = [{key: monitor.resource_utilization[key] for key in monitor.resource_utilization} for monitor in monitors]
+        occupied = {key: np.mean([dic[key] for dic in occupied]) for key in occupied[0]}
+
+        for key, value in occupied.items():
+            self.logger.record('mean_{}'.format(key), value)
 
         # log the mean number of operating servers per step in an episode
-        self.logger.record('mean_operating_servers',
-                           monitor.operating_servers / monitor.episode_length)
+        operating =  np.mean([monitor.operating_servers / monitor.episode_length for monitor in monitors])
+        self.logger.record('mean_operating_servers', operating)
 
 
 class NFVDeepMonitor(Monitor):
     """Custom monitor tracking additional metrics that ensures compatability with StableBaselines."""
 
-    def reset(self, **kwargs):
+    def __init__(self,
+        env: gym.Env,
+        filename: Optional[str] = None,
+        allow_early_resets: bool = True,
+        reset_keywords: Tuple[str, ...] = (),
+        info_keywords: Tuple[str, ...] = (),
+    ):
+        super().__init__(env, filename, allow_early_resets, reset_keywords, info_keywords)
+
+        self._last_step_reset = True
+        self._reset()
+
+    def _reset(self, **kwargs):
         """Augments the environment's monitor with network related metrics."""
+        
         self.num_accepted = 0
         self.num_rejected = 0
         self.episode_length = 1
+        self.operating_servers = 0
+
+        self.placements = {}
+
         self.resource_costs = {'cpu_cost': 0,
                                'memory_cost': 0,
                                'bandwidth_cost': 0}
@@ -53,16 +84,17 @@ class NFVDeepMonitor(Monitor):
                                      'memory_utilization': 0,
                                      'bandwidth_utilization': 0}
 
-        self.operating_servers = 0
-
-        self.placements = {}
-
-        return super().reset(**kwargs)
 
     def step(self, action):
         """Extract the environment's information to the monitor."""
+
         observation, reward, done, info = super(
             NFVDeepMonitor, self).step(action)
+
+        if self._last_step_reset:
+            self._reset()
+
+        self._last_step_reset = done
 
         # add sfc related information to the monitor
         self.num_accepted += info['accepted']
