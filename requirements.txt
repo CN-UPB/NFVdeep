@@ -92,7 +92,7 @@ scipy @ file:///tmp/build/80754af9/scipy_1597686649129/work
 seaborn==0.11.0
 six==1.15.0
 soupsieve==2.0.1
-stable-baselines3==0.8.0
+stable-baselines3==1.5.0
 tabulate==0.8.7
 tensorboard==2.3.0
 tensorboard-plugin-wit==1.7.0
