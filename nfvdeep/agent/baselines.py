@@ -18,28 +18,32 @@ class BaselineHeuristic(BaseAlgorithm):
         self.n_steps = 2048
 
         # initialize BaseAlgorithm
-        kwargs['learning_rate'] = 0.0
-        kwargs['policy_base'] = None
+        kwargs["learning_rate"] = 0.0
+        kwargs["policy_base"] = None
         super(BaselineHeuristic, self).__init__(**kwargs)
         self._setup_model()
 
-    def train(self):
-        # baseline heuristics do not require training
+    def learn(self, **kwargs):
         pass
 
-    def predict(self, observation, state=None, mask=None, deterministic=False,):
+    def predict(
+        self, observation, state=None, mask=None, deterministic=False, **kwargs
+    ):
         scalar_tensor = self.policy._predict(
-            observation, **{'deterministic': deterministic})
-        return scalar_tensor.item(), None
+            observation, **{"deterministic": deterministic}
+        )
+        return scalar_tensor.numpy().reshape(-1), None
 
     def _setup_model(self):
         """Setup heuristic baseline policy with modified constructor"""
         self._setup_lr_schedule()
-        self.policy = self.policy_class(self.env,
-                                        self.observation_space,
-                                        self.action_space,
-                                        self.lr_schedule,
-                                        **self.policy_kwargs)
+        self.policy = self.policy_class(
+            self.env,
+            self.observation_space,
+            self.action_space,
+            self.lr_schedule,
+            **self.policy_kwargs
+        )
 
     def collect_rollouts(self, env, callback, n_rollout_steps):
         """Rollout baseline policy to environment and collect performance in monitor wrapper"""
@@ -62,50 +66,66 @@ class BaselineHeuristic(BaseAlgorithm):
 
         return True
 
-    def learn(self, total_timesteps,
-              callback=None,
-              log_interval=1,
-              tb_log_name="run",
-              eval_env=None,
-              eval_freq=-1,
-              n_eval_episodes=5,
-              eval_log_path=None,
-              reset_num_timesteps=True,
-              ):
+    def learn(
+        self,
+        total_timesteps,
+        callback=None,
+        log_interval=1,
+        tb_log_name="run",
+        eval_env=None,
+        eval_freq=-1,
+        n_eval_episodes=5,
+        eval_log_path=None,
+        reset_num_timesteps=True,
+    ):
 
         iteration = 0
         total_timesteps, callback = self._setup_learn(
-            total_timesteps, eval_env, callback, eval_freq, n_eval_episodes, eval_log_path, reset_num_timesteps, tb_log_name
+            total_timesteps,
+            eval_env,
+            callback,
+            eval_freq,
+            n_eval_episodes,
+            eval_log_path,
+            reset_num_timesteps,
+            tb_log_name,
         )
 
         callback.on_training_start(locals(), globals())
 
         while self.num_timesteps < total_timesteps:
             continue_training = self.collect_rollouts(
-                self.env, callback, n_rollout_steps=self.n_steps)
+                self.env, callback, n_rollout_steps=self.n_steps
+            )
 
             if continue_training is False:
                 break
 
             iteration += 1
-            self._update_current_progress_remaining(
-                self.num_timesteps, total_timesteps)
+            self._update_current_progress_remaining(self.num_timesteps, total_timesteps)
 
             # Display training infos
             if log_interval is not None and iteration % log_interval == 0:
                 fps = int(self.num_timesteps / (time.time() - self.start_time))
-                logger.record("time/iterations", iteration,
-                              exclude="tensorboard")
+                logger.record("time/iterations", iteration, exclude="tensorboard")
                 if len(self.ep_info_buffer) > 0 and len(self.ep_info_buffer[0]) > 0:
                     logger.record(
-                        "rollout/ep_rew_mean", safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]))
+                        "rollout/ep_rew_mean",
+                        safe_mean([ep_info["r"] for ep_info in self.ep_info_buffer]),
+                    )
                     logger.record(
-                        "rollout/ep_len_mean", safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer]))
+                        "rollout/ep_len_mean",
+                        safe_mean([ep_info["l"] for ep_info in self.ep_info_buffer]),
+                    )
                 logger.record("time/fps", fps)
-                logger.record("time/time_elapsed", int(time.time() -
-                                                       self.start_time), exclude="tensorboard")
-                logger.record("time/total_timesteps",
-                              self.num_timesteps, exclude="tensorboard")
+                logger.record(
+                    "time/time_elapsed",
+                    int(time.time() - self.start_time),
+                    exclude="tensorboard",
+                )
+                logger.record(
+                    "time/total_timesteps", self.num_timesteps, exclude="tensorboard"
+                )
                 logger.dump(step=self.num_timesteps)
 
             self.train()
@@ -118,15 +138,14 @@ class BaselineHeuristic(BaseAlgorithm):
 class BaselinePolicy(BasePolicy):
     """Stem for implementing baseline policies that adhere to the StableBaseline3 interface"""
 
-    def __init__(self, env, observation_space, action_space, lr_schedule, device="auto", **kwargs):
+    def __init__(
+        self, env, observation_space, action_space, lr_schedule, device="auto", **kwargs
+    ):
         super(BaselinePolicy, self).__init__(
-            observation_space,
-            action_space,
-            device,
-            **kwargs
+            observation_space, action_space, device, **kwargs
         )
         # set internal NFVdeep environment assuming solely one execution environment (no parallel training)
-        assert(env.num_envs == 1), 'Heuristic must be trained sequentially'
+        assert env.num_envs == 1, "Heuristic must be trained sequentially"
         self.env = next(iter(env.envs)).env
 
     def forward(self, obs, deterministic=False):
@@ -148,14 +167,16 @@ class FirstFitPolicy(BaselinePolicy):
         current_vnf = current_sfc.vnfs[self.env.vnf_idx]
 
         for node in range(self.env.vnf_backtrack.num_nodes):
-            if self.env.vnf_backtrack.check_vnf_resources(current_vnf, current_sfc.bandwidth_demand, node):
+            if self.env.vnf_backtrack.check_vnf_resources(
+                current_vnf, current_sfc.bandwidth_demand, node
+            ):
                 return th.scalar_tensor(node, dtype=th.int16)
 
         return self.env.vnf_backtrack.num_nodes
 
 
 class FirstFitPolicy2(FirstFitPolicy):
-    """Agent that takes as action the first fitting node, but rejects sfc that 
+    """Agent that takes as action the first fitting node, but rejects sfc that
     have high costs compared to the revenue."""
 
     def _predict(self, state, factor=1, **kwargs):
@@ -163,10 +184,14 @@ class FirstFitPolicy2(FirstFitPolicy):
         current_vnf = current_sfc.vnfs[self.env.vnf_idx]
         positive_reward = current_sfc.bandwidth_demand
         costs = self.env.vnf_backtrack.costs
-        negative_reward = sum([vnf[0]*costs['cpu']+vnf[1]*costs['memory']
-                               for vnf in current_sfc.vnfs])
+        negative_reward = sum(
+            [
+                vnf[0] * costs["cpu"] + vnf[1] * costs["memory"]
+                for vnf in current_sfc.vnfs
+            ]
+        )
 
-        if positive_reward < factor*negative_reward:
+        if positive_reward < factor * negative_reward:
             # reject embedding of VNF
             return th.scalar_tensor(self.env.vnf_backtrack.num_nodes, dtype=th.int16)
 
@@ -174,7 +199,7 @@ class FirstFitPolicy2(FirstFitPolicy):
 
 
 class FirstFitPolicy3(BaselinePolicy):
-    """Agent that takes as action the first fitting node which is 
+    """Agent that takes as action the first fitting node which is
     close to the previous embedded node in the SFC."""
 
     def _predict(self, state, **kwargs):
@@ -182,24 +207,31 @@ class FirstFitPolicy3(BaselinePolicy):
         current_vnf = current_sfc.vnfs[self.env.vnf_idx]
 
         if self.env.vnf_idx == 0:
-            source = random.randint(0, self.env.vnf_backtrack.num_nodes-1)
+            source = random.randint(0, self.env.vnf_backtrack.num_nodes - 1)
             last_node = None
 
         else:
-            source = self.env.vnf_backtrack.sfc_embedding[current_sfc][self.env.vnf_idx-1]
+            source = self.env.vnf_backtrack.sfc_embedding[current_sfc][
+                self.env.vnf_idx - 1
+            ]
             last_node = source
 
         path_length = nx.shortest_path_length(
-            self.env.vnf_backtrack.overlay, source=source, weight='latency')
-        sorted_nodes = [node for node, _ in sorted(
-            path_length.items(), key=lambda item: item[1])]
+            self.env.vnf_backtrack.overlay, source=source, weight="latency"
+        )
+        sorted_nodes = [
+            node for node, _ in sorted(path_length.items(), key=lambda item: item[1])
+        ]
 
         for node in sorted_nodes:
-            if self.env.vnf_backtrack.check_vnf_resources(current_vnf, current_sfc.bandwidth_demand, node):
+            if self.env.vnf_backtrack.check_vnf_resources(
+                current_vnf, current_sfc.bandwidth_demand, node
+            ):
                 if not node == last_node:
                     # check if the bandwidth constraint holds
                     remaining_bandwidth = self.env.vnf_backtrack.calculate_resources()[
-                        node]['bandwidth']
+                        node
+                    ]["bandwidth"]
                     if remaining_bandwidth - current_sfc.bandwidth_demand < 0:
                         continue
                 return th.scalar_tensor(node, dtype=th.int16)
@@ -215,10 +247,14 @@ class FirstFitPolicy4(FirstFitPolicy3):
         current_sfc = self.env.request_batch[self.env.sfc_idx]
         positive_reward = current_sfc.bandwidth_demand
         costs = self.env.vnf_backtrack.costs
-        negative_reward = sum([vnf[0]*costs['cpu']+vnf[1]*costs['memory']
-                               for vnf in current_sfc.vnfs])
+        negative_reward = sum(
+            [
+                vnf[0] * costs["cpu"] + vnf[1] * costs["memory"]
+                for vnf in current_sfc.vnfs
+            ]
+        )
 
-        if positive_reward < factor*negative_reward:
+        if positive_reward < factor * negative_reward:
             return th.scalar_tensor(self.env.vnf_backtrack.num_nodes, dtype=th.int16)
 
         return super()._predict(state, **kwargs)
