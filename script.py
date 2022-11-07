@@ -80,7 +80,7 @@ def main():
     else:
         raise ValueError()
 
-    agent = agent.learn(
+    agent.learn(
         total_timesteps=args.total_train_timesteps,
         tb_log_name=args.agent,
         callback=eval_callback,
