@@ -2,7 +2,7 @@
     "type": "poisson_arrival_uniform_load",
     "static": true,
     "num_timeslots": [30000, 30000],
-    "num_requests": [100, 100],
+    "num_requests": [1000, 1000],
     "service_rate": [100, 1000],
     "num_vnfs": 6, 
     "sfc_length": [1, 6], 
